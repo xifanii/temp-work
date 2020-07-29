@@ -11,13 +11,23 @@
       margin: 0;
       padding: 0;
     }
+    .top {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: aquamarine;
+      height: 50px;
+    }
     #editorContainer {
+      margin-top: 50px;
       padding: 15px;
       /*box-sizing: border-box;*/
     }
   </style>
 </head>
 <body>
+<div class="top" onclick="myFunction()">button</div>
 <div id="editorContainer"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-polyfills/0.1.42/polyfill.min.js"></script>
@@ -31,11 +41,18 @@
   // 实例化 ZxEditor
   var zxEditor = new ZxEditor('#editorContainer', {
     editable: true,
+    // fixed: true,
     // placeholder: '自定义placeholder',
     // lineHeight: 1,
     // padding: '0 0 30px',
     // placeholderColor: 'red',
-    cursorColor: 'red'
+    cursorOffsetTop: 260,
+    placeholder: '分享自己的真实经验或观点',
+    placeholderColor: '#9d9d9d',
+    cursorColor: '#272727',
+    mainColor: '#272727',
+    toolbarBtns: [],
+    toolbarHeight: 0,
   })
 
   // 实例化 VConsole
@@ -73,6 +90,17 @@
   zxEditor.on('windowResize', function () {
     console.error('windowResize', window.innerHeight)
   })
+
+  const myFunction = () => {
+    console.log(zxEditor.getText());
+    // const e = document.createElement('a');
+    // e.setAttribute('href', `http://baidu.com`);
+    // e.setAttribute('name', 'topic');
+    // e.setAttribute('contenteditable', false);
+    // e.innerText = `#abxxxx`;
+    // zxEditor.insertElm(e, 'a');
+    // console.log('insertElminsertElm');
+  };
 </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
  * https://github.com/capricorncd/zx-editor
  * Copyright © 2018-present, capricorncd
  * Released under the MIT License
- * Released on: 2020-07-15 22:07:27
+ * Released on: 2020-07-27 10:20:50
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -1306,7 +1306,7 @@
       return null;
     },
     offset: function offset() {
-      if (this.length > 0) {
+      if (this.length > 0 && this[0].getBoundingClientRect) {
         var el = this[0];
         var box = el.getBoundingClientRect();
         var body = doc.body;
@@ -1724,7 +1724,7 @@
    * User: https://github.com/capricorncd
    * Date: 2019/04/21 10:33
    */
-  var IPHONEX_BOTTOM_OFFSET_HEIGHT = 34;
+  var IPHONEX_BOTTOM_OFFSET_HEIGHT = 0;
 
   /**
    * Created by Capricorncd.
@@ -2442,6 +2442,7 @@
      */
 
     function windowResize(e) {
+      console.log('windowResize !!! >>>', e);
       this.emit('windowResize', e, this); // toolbar
 
       this.toolbar.init(); // expansion panels
@@ -2563,7 +2564,12 @@
 
       this.$cursorNode = this.cursor.getCurrentNode(); // check position
 
-      this.checkPosition(); // textStylePanel is undefined, or is hide
+      this.checkPosition(); // 阻止触发a标签默认事件
+
+      if (e && e.target && e.target.nodeName === 'A') {
+        e.preventDefault();
+      } // textStylePanel is undefined, or is hide
+
 
       if (!this.textStylePanel || !this.textStylePanel.visible) return;
       this.textStylePanel.resetActiveState();
@@ -2605,8 +2611,9 @@
 
         contentClick.call(this);
       } // check position
-      // this.checkPosition()
 
+
+      this.checkPosition();
     }
 
     this.$eventHandlers.contentKeyup = {
@@ -3246,18 +3253,17 @@
      * @param el
      */
     insertElm: function insertElm(el) {
-      // string
+      console.log('insertElm', el); // string
+
       if (!el) return; // 光标元素及偏移量
 
       var $cursorNode = this.$cursorNode;
       var newRangeEl, newRangeOffset;
-      /**
-       * string
-       */
 
       if (typeof el === 'string') {
-        // 光标所在元素内容为空
+        // 插入text
         if ($cursorNode.isEmpty()) {
+          // 光标所在元素内容为空
           $cursorNode.text(el);
           newRangeEl = $cursorNode;
           newRangeOffset = el.length;
@@ -3279,52 +3285,80 @@
           newRangeEl = $newEl;
           newRangeOffset = el.length;
         }
-      }
-      /**
-       * 插入元素为：非文本
-       */
-      else {
-          var $el = $(el);
-          var $elm;
+      } else if (el.nodeName === 'A') {
+        // 插入a标签
+        var $elm;
 
-          for (var i = 0; i < $el.length; i++) {
-            $elm = $($el[i]);
-            var nodeName = $elm.nodeName(); // SECTION
+        if ($cursorNode.isEmpty()) {
+          // 插入到childIndex后
+          var $tmp = $("<section></section>");
+          $elm = $tmp.append(el);
+          $cursorNode.replace($elm);
+        } else {
+          $elm = $cursorNode.append(el);
+          $elm.insertAfter($cursorNode);
+        } // 判断$el是否有下一个节点，有：光标指向el结束，无：则插入空行，并移动光标
 
-            if (nodeName !== 'section') {
-              if ($elm.nodeType() === 1 && !/video|img|audio/.test(nodeName)) {
-                $elm.changeNodeName('section');
-              } else {
-                var $tmp = $("<section></section>");
-                $elm = $tmp.append($elm);
-              }
-            }
 
-            if ($cursorNode.isEmpty()) {
-              // siblings is empty
-              if ($cursorNode.next()[0] && $cursorNode.next().isEmpty()) {
-                $cursorNode.replace($elm);
-              } else {
-                $elm.insertBefore($cursorNode);
-              }
+        var next = $elm.next()[0];
+
+        if (next) {
+          newRangeEl = $elm;
+          newRangeOffset = $elm.isTextNode() ? $elm.text().length : 0;
+        } else {
+          var $section = $("<section><br></section>");
+          this.$content.append($section);
+          newRangeEl = $section;
+          newRangeOffset = 0;
+        }
+      } else {
+        // 插入元素为：非文本
+        var $el = $(el);
+
+        var _$elm;
+
+        for (var i = 0; i < $el.length; i++) {
+          _$elm = $($el[i]);
+
+          var nodeName = _$elm.nodeName(); // SECTION
+
+
+          if (nodeName !== 'section') {
+            if (_$elm.nodeType() === 1 && !/a|video|img|audio/.test(nodeName)) {
+              _$elm.changeNodeName('section');
             } else {
-              $elm.insertAfter($cursorNode);
-            } // 判断$el是否有下一个节点，有：光标指向el结束，无：则插入空行，并移动光标
+              var _$tmp = $("<section></section>");
 
-
-            var next = $elm.next()[0];
-
-            if (next) {
-              newRangeEl = $elm;
-              newRangeOffset = $elm.isTextNode() ? $elm.text().length : 0;
-            } else {
-              var $section = $("<section><br></section>");
-              this.$content.append($section);
-              newRangeEl = $section;
-              newRangeOffset = 0;
+              _$elm = _$tmp.append(_$elm);
             }
           }
+
+          if ($cursorNode.isEmpty()) {
+            // siblings is empty
+            if ($cursorNode.next()[0] && $cursorNode.next().isEmpty()) {
+              $cursorNode.replace(_$elm);
+            } else {
+              _$elm.insertBefore($cursorNode);
+            }
+          } else {
+            _$elm.insertAfter($cursorNode);
+          } // 判断$el是否有下一个节点，有：光标指向el结束，无：则插入空行，并移动光标
+
+
+          var _next = _$elm.next()[0];
+
+          if (_next) {
+            newRangeEl = _$elm;
+            newRangeOffset = _$elm.isTextNode() ? _$elm.text().length : 0;
+          } else {
+            var _$section = $("<section><br></section>");
+
+            this.$content.append(_$section);
+            newRangeEl = _$section;
+            newRangeOffset = 0;
+          }
         }
+      }
 
       this._checkChildSection();
 
@@ -3427,7 +3461,7 @@
      * @return {*|string}
      */
     getText: function getText() {
-      return this.$content.text();
+      return this.$content && this.$content[0].innerText;
     },
 
     /**
@@ -3469,18 +3503,20 @@
      * @param data
      */
     setContentHeight: function setContentHeight(data) {
-      var winHeight = window.innerHeight;
+      // let winHeight = window.innerHeight
+      // let styles = {
+      //   // 防止正文内容被键盘挡住，无法查看
+      //   marginBottom: winHeight + 'px'
+      // }
+      // // check height
+      // if (data.height) {
+      //   styles.height = typeof data.height === 'number' ? (data.height + 'px') : data.height
+      // } else {
+      //   styles.minHeight = (util.int(data.minHeight) || winHeight) + 'px'
+      // }
       var styles = {
-        // 防止正文内容被键盘挡住，无法查看
-        marginBottom: winHeight + 'px'
-      }; // check height
-
-      if (data.height) {
-        styles.height = typeof data.height === 'number' ? data.height + 'px' : data.height;
-      } else {
-        styles.minHeight = (util["int"](data.minHeight) || winHeight) + 'px';
-      }
-
+        minHeight: '200px'
+      };
       this.$content.css(styles);
     },
 
@@ -3541,7 +3577,8 @@
      * check cursor position
      */
     checkPosition: function checkPosition() {
-      var $el = this.$cursorNode = this.cursor.getCurrentNode(); // 当前光标位置
+      var $el = this.$cursorNode = this.cursor.getCurrentNode();
+      if (!$el || !$el.offset()) return; // 当前光标位置
 
       var cursorOffset = this.cursor.offset; // 文本内容长度
 
@@ -3550,6 +3587,9 @@
       var height = $el.height(); // 当前元素top
 
       var top = $el.offset().top;
+      var scrollTop; // 当前光标位置，距当前元素顶部距离
+
+      var cursorHeight = 0; // 每行大概有几个字
 
       var textNumOfPerLine = len / (height / this.lineHeight); // 当前光标所在行
 
@@ -3557,7 +3597,16 @@
 
       var cursorHeightInCurrentNode = (line - 1) * this.lineHeight; // editor postion: fixed;
 
-      if (this.options.fixed) ;
+      if (this.options.fixed) ; else {
+        // 当前光标位置超过了屏幕的4分之1
+        if (cursorHeightInCurrentNode > window.innerHeight / 4) {
+          cursorHeight = cursorHeightInCurrentNode;
+          console.log('cursorHeight >>>>', cursorHeight);
+        }
+
+        scrollTop = $(window).scrollTop();
+        $(window).scrollTop(scrollTop + top + cursorHeight - this.options.cursorOffsetTop);
+      }
     }
   };
 

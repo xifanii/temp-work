@@ -170,19 +170,18 @@ ZxEditor.prototype = {
    * 插入元素或字符串
    * @param el
    */
-  insertElm (el) {
+  insertElm(el) {
+    console.log('insertElm', el);
     // string
     if (!el) return
     // 光标元素及偏移量
     let $cursorNode = this.$cursorNode
 
     let newRangeEl, newRangeOffset
-    /**
-     * string
-     */
     if (typeof el === 'string') {
-      // 光标所在元素内容为空
+      // 插入text
       if ($cursorNode.isEmpty()) {
+        // 光标所在元素内容为空
         $cursorNode.text(el)
         newRangeEl = $cursorNode
         newRangeOffset = el.length
@@ -202,11 +201,32 @@ ZxEditor.prototype = {
         newRangeEl = $newEl
         newRangeOffset = el.length
       }
-    }
-    /**
-     * 插入元素为：非文本
-     */
-    else {
+    } else if (el.nodeName === 'A') {
+      // 插入a标签
+      let $elm;
+      if ($cursorNode.isEmpty()) {
+        // 插入到childIndex后
+        let $tmp = $(`<section></section>`);
+        $elm = $tmp.append(el);
+        $cursorNode.replace($elm);
+      } else {
+        $elm = $cursorNode.append(el);
+        $elm.insertAfter($cursorNode);
+      }
+     
+      // 判断$el是否有下一个节点，有：光标指向el结束，无：则插入空行，并移动光标
+      let next = $elm.next()[0]
+      if (next) {
+        newRangeEl = $elm
+        newRangeOffset = $elm.isTextNode() ? $elm.text().length : 0
+      } else {
+        let $section = $(`<section><br></section>`)
+        this.$content.append($section)
+        newRangeEl = $section
+        newRangeOffset = 0
+      }
+    } else {
+      // 插入元素为：非文本
       let $el = $(el)
       let $elm
       for (let i = 0; i < $el.length; i++) {
@@ -214,7 +234,7 @@ ZxEditor.prototype = {
         let nodeName = $elm.nodeName()
         // SECTION
         if (nodeName !== 'section') {
-          if ($elm.nodeType() === 1 && !/video|img|audio/.test(nodeName)) {
+          if ($elm.nodeType() === 1 && !/a|video|img|audio/.test(nodeName)) {
             $elm.changeNodeName('section')
           } else {
             let $tmp = $(`<section></section>`)
@@ -231,6 +251,7 @@ ZxEditor.prototype = {
         } else {
           $elm.insertAfter($cursorNode)
         }
+
         // 判断$el是否有下一个节点，有：光标指向el结束，无：则插入空行，并移动光标
         let next = $elm.next()[0]
         if (next) {
@@ -338,7 +359,7 @@ ZxEditor.prototype = {
    * @return {*|string}
    */
   getText () {
-    return this.$content.text()
+    return this.$content && this.$content[0].innerText;
   },
 
   /**
@@ -381,18 +402,21 @@ ZxEditor.prototype = {
    * @param data
    */
   setContentHeight (data) {
-    let winHeight = window.innerHeight
-    let styles = {
-      // 防止正文内容被键盘挡住，无法查看
-      marginBottom: winHeight + 'px'
-    }
-    // check height
-    if (data.height) {
-      styles.height = typeof data.height === 'number' ? (data.height + 'px') : data.height
-    } else {
-      styles.minHeight = (util.int(data.minHeight) || winHeight) + 'px'
-    }
+    // let winHeight = window.innerHeight
+    // let styles = {
+    //   // 防止正文内容被键盘挡住，无法查看
+    //   marginBottom: winHeight + 'px'
+    // }
+    // // check height
+    // if (data.height) {
+    //   styles.height = typeof data.height === 'number' ? (data.height + 'px') : data.height
+    // } else {
+    //   styles.minHeight = (util.int(data.minHeight) || winHeight) + 'px'
+    // }
 
+    let styles = {
+      minHeight: '200px',
+    }
     this.$content.css(styles)
   },
 
@@ -449,6 +473,8 @@ ZxEditor.prototype = {
    */
   checkPosition () {
     const $el = this.$cursorNode = this.cursor.getCurrentNode()
+    if (!$el || !$el.offset()) return;
+
     // 当前光标位置
     let cursorOffset = this.cursor.offset
     // 文本内容长度
@@ -473,12 +499,14 @@ ZxEditor.prototype = {
     if (this.options.fixed) {
 
     } else {
+
       // 当前光标位置超过了屏幕的4分之1
-      // if (cursorHeightInCurrentNode > window.innerHeight / 4) {
-      //   cursorHeight = cursorHeightInCurrentNode
-      // }
-      // scrollTop = $(window).scrollTop()
-      // $(window).scrollTop(scrollTop + top + cursorHeight - this.options.cursorOffsetTop)
+      if (cursorHeightInCurrentNode > window.innerHeight / 4) {
+        cursorHeight = cursorHeightInCurrentNode
+        console.log('cursorHeight >>>>', cursorHeight);
+      }
+      scrollTop = $(window).scrollTop()
+      $(window).scrollTop(scrollTop + top + cursorHeight - this.options.cursorOffsetTop)
     }
   }
 }

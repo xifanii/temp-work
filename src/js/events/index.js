@@ -24,7 +24,8 @@ export function handleEvents () {
    * window on resize
    * ****************************************************
    */
-  function windowResize (e) {
+  function windowResize(e) {
+    console.log('windowResize !!! >>>', e);
     this.emit('windowResize', e, this)
     // toolbar
     this.toolbar.init()
@@ -140,10 +141,17 @@ export function handleEvents () {
    */
   function contentClick (e) {
     this.emit('click', e, this)
+
     // save $cursorNode
     this.$cursorNode = this.cursor.getCurrentNode()
     // check position
     this.checkPosition()
+
+    // 阻止触发a标签默认事件
+    if (e && e.target && e.target.nodeName === 'A') {
+      e.preventDefault()
+    }
+
     // textStylePanel is undefined, or is hide
     if (!this.textStylePanel || !this.textStylePanel.visible) return
     this.textStylePanel.resetActiveState()
@@ -186,7 +194,7 @@ export function handleEvents () {
       contentClick.call(this)
     }
     // check position
-    // this.checkPosition()
+    this.checkPosition()
   }
 
   this.$eventHandlers.contentKeyup = {

@@ -3,7 +3,7 @@
  * https://github.com/capricorncd/zx-editor
  * Copyright © 2018-present, capricorncd
  * Released under the MIT License
- * Released on: 2020-07-15 22:07:27
+ * Released on: 2020-07-27 10:20:50
  *//**
  * ******************************************
  * animation
@@ -112,6 +112,11 @@
 .zx-editor .zx-editor-content-wrapper > * {
   margin-bottom: 10px;
   text-align: justify;
+}
+.zx-editor .zx-editor-content-wrapper a {
+  margin: 0 5px 0 2px;
+  color: #44B979;
+  text-decoration: none;
 }
 .zx-editor .zx-editor-content-wrapper img,
 .zx-editor .zx-editor-content-wrapper video,

@@ -817,7 +817,7 @@ ZxQuery.prototype = {
   },
 
   offset () {
-    if (this.length > 0) {
+    if (this.length > 0 && this[0].getBoundingClientRect) {
       let el = this[0]
       let box = el.getBoundingClientRect()
       let body = document.body
