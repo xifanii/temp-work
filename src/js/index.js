@@ -34,6 +34,8 @@ const DEF_OPTIONS = {
   paragraphTailSpacing: '',
   cursorColor: '',
   textColor: '',
+  // 编辑器最小高度
+  minHeight: '200px',
   // iphone会自动移动，难控制
   cursorOffsetTop: 30,
   // 自定义粘贴处理
@@ -171,13 +173,11 @@ ZxEditor.prototype = {
    * @param el
    */
   insertElm(el) {
-    console.log('insertElm', el);
-    // string
     if (!el) return
     // 光标元素及偏移量
-    let $cursorNode = this.$cursorNode
+    let $cursorNode = this.$cursorNode;
+    let newRangeEl, newRangeOffset;
 
-    let newRangeEl, newRangeOffset
     if (typeof el === 'string') {
       // 插入text
       if ($cursorNode.isEmpty()) {
@@ -185,20 +185,19 @@ ZxEditor.prototype = {
         $cursorNode.text(el)
         newRangeEl = $cursorNode
         newRangeOffset = el.length
-      } else if ($cursorNode.children().every($item => $item.isTextNode())) {
+      } else if ($cursorNode.children().length <= 0) {
+        // 纯文本
         let rangeOffset = this.cursor.offset
         let rangeNodeStr = $cursorNode.text()
         let tmpStr = rangeNodeStr.substr(0, rangeOffset) + el + rangeNodeStr.substr(rangeOffset)
-        // $section = $cursorNode.closest('section')
         $cursorNode.text(tmpStr)
         newRangeEl = $cursorNode
         newRangeOffset = el.length + rangeOffset
       } else {
-        // 创建一个section
-        let $newEl = $(`<section>${el}</section>`)
-        // 插入到childIndex后
-        $newEl.insertAfter($cursorNode)
-        newRangeEl = $newEl
+        // 包含标签 加到最后面
+        let $elm = $cursorNode.append(el);
+        $elm.insertAfter($cursorNode);
+        newRangeEl = $elm
         newRangeOffset = el.length
       }
     } else if (el.nodeName === 'A') {
@@ -267,7 +266,6 @@ ZxEditor.prototype = {
     }
     this._checkChildSection()
     this.$content.trigger('input')
-    console.log(newRangeEl, newRangeOffset)
     this.cursor.setRange(newRangeEl, newRangeOffset)
   },
 
@@ -415,7 +413,7 @@ ZxEditor.prototype = {
     // }
 
     let styles = {
-      minHeight: '200px',
+      minHeight: this.options.minHeight,
     }
     this.$content.css(styles)
   },
@@ -503,7 +501,6 @@ ZxEditor.prototype = {
       // 当前光标位置超过了屏幕的4分之1
       if (cursorHeightInCurrentNode > window.innerHeight / 4) {
         cursorHeight = cursorHeightInCurrentNode
-        console.log('cursorHeight >>>>', cursorHeight);
       }
       scrollTop = $(window).scrollTop()
       $(window).scrollTop(scrollTop + top + cursorHeight - this.options.cursorOffsetTop)

@@ -19,6 +19,13 @@
       background-color: aquamarine;
       height: 50px;
     }
+    .btn {
+      display: inline-block;
+      height: 50px;
+      width: 49%;
+      line-height: 50px;
+      text-align: center;
+    }
     #editorContainer {
       margin-top: 50px;
       padding: 15px;
@@ -27,7 +34,10 @@
   </style>
 </head>
 <body>
-<div class="top" onclick="myFunction()">button</div>
+<div class="top">
+  <div class="btn" onclick="clickLeft()">left button</div>
+  <div class="btn" onclick="clickRight()">right button</div>
+</div>
 <div id="editorContainer"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-polyfills/0.1.42/polyfill.min.js"></script>
@@ -91,15 +101,16 @@
     console.error('windowResize', window.innerHeight)
   })
 
-  const myFunction = () => {
-    console.log(zxEditor.getText());
-    // const e = document.createElement('a');
-    // e.setAttribute('href', `http://baidu.com`);
-    // e.setAttribute('name', 'topic');
-    // e.setAttribute('contenteditable', false);
-    // e.innerText = `#abxxxx`;
-    // zxEditor.insertElm(e, 'a');
-    // console.log('insertElminsertElm');
+  const clickLeft = () => {
+    zxEditor.insertElm('😠');
+  };
+  const clickRight = () => {
+    const e = document.createElement('a');
+    e.setAttribute('href', `/community/topic`);
+    e.setAttribute('name', 'topic');
+    e.setAttribute('contenteditable', false);
+    e.innerText = `#话题xxx`;
+    zxEditor.insertElm(e);
   };
 </script>
 </body>

@@ -3,7 +3,7 @@
  * https://github.com/capricorncd/zx-editor
  * Copyright © 2018-present, capricorncd
  * Released under the MIT License
- * Released on: 2020-07-27 10:20:50
+ * Released on: 2020-08-18 14:57:49
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -1413,6 +1413,8 @@
     setRange: function setRange(el, offset) {
       var _this = this;
 
+      console.log('setRange ...', el, offset);
+
       if (el instanceof ZxQuery) {
         el = el[0];
       }
@@ -1473,8 +1475,7 @@
       // 设置最后光标对象
       try {
         this.range = this.selection.getRangeAt(0);
-      } catch (e) {
-        this.range = new Range();
+      } catch (e) {// this.range = new Range()
       }
 
       this.currentNode = this.range.endContainer;
@@ -2158,7 +2159,7 @@
     this.visible = options.toolbarBeenFixed; // create element
 
     this.height = options.toolbarHeight;
-    this.$el = $("<div class=\"zx-editor-toolbar-wrapper border-top ".concat(this.visible ? 'in' : 'out', "\" style=\"height:").concat(this.height + (util.isIPhoneX ? IPHONEX_BOTTOM_OFFSET_HEIGHT : 0), "px;\"><dl class=\"inner-wrapper\" style=\"height:").concat(this.height, "px;\"></dl></div>")); // append to $editor
+    this.$el = $("<div class=\"zx-editor-toolbar-wrapper border-top ".concat(this.visible ? 'in' : 'out', "\" style=\"display:").concat(this.height > 0 ? 'block' : 'none', ";height:").concat(this.height + (util.isIPhoneX ? IPHONEX_BOTTOM_OFFSET_HEIGHT : 0), "px;\"><dl class=\"inner-wrapper\" style=\"height:").concat(this.height, "px;\"></dl></div>")); // append to $editor
 
     zxEditor.$editor.append(this.$el); // init
 
@@ -3115,6 +3116,8 @@
     paragraphTailSpacing: '',
     cursorColor: '',
     textColor: '',
+    // 编辑器最小高度
+    minHeight: '200px',
     // iphone会自动移动，难控制
     cursorOffsetTop: 30,
     // 自定义粘贴处理
@@ -3253,8 +3256,6 @@
      * @param el
      */
     insertElm: function insertElm(el) {
-      console.log('insertElm', el); // string
-
       if (!el) return; // 光标元素及偏移量
 
       var $cursorNode = this.$cursorNode;
@@ -3267,44 +3268,42 @@
           $cursorNode.text(el);
           newRangeEl = $cursorNode;
           newRangeOffset = el.length;
-        } else if ($cursorNode.children().every(function ($item) {
-          return $item.isTextNode();
-        })) {
+        } else if ($cursorNode.children().length <= 0) {
+          // 纯文本
           var rangeOffset = this.cursor.offset;
           var rangeNodeStr = $cursorNode.text();
-          var tmpStr = rangeNodeStr.substr(0, rangeOffset) + el + rangeNodeStr.substr(rangeOffset); // $section = $cursorNode.closest('section')
-
+          var tmpStr = rangeNodeStr.substr(0, rangeOffset) + el + rangeNodeStr.substr(rangeOffset);
           $cursorNode.text(tmpStr);
           newRangeEl = $cursorNode;
           newRangeOffset = el.length + rangeOffset;
         } else {
-          // 创建一个section
-          var $newEl = $("<section>".concat(el, "</section>")); // 插入到childIndex后
-
-          $newEl.insertAfter($cursorNode);
-          newRangeEl = $newEl;
+          // 包含标签 加到最后面
+          var $elm = $cursorNode.append(el);
+          $elm.insertAfter($cursorNode);
+          newRangeEl = $elm;
           newRangeOffset = el.length;
         }
       } else if (el.nodeName === 'A') {
         // 插入a标签
-        var $elm;
+        var _$elm;
 
         if ($cursorNode.isEmpty()) {
           // 插入到childIndex后
           var $tmp = $("<section></section>");
-          $elm = $tmp.append(el);
-          $cursorNode.replace($elm);
+          _$elm = $tmp.append(el);
+          $cursorNode.replace(_$elm);
         } else {
-          $elm = $cursorNode.append(el);
-          $elm.insertAfter($cursorNode);
+          _$elm = $cursorNode.append(el);
+
+          _$elm.insertAfter($cursorNode);
         } // 判断$el是否有下一个节点，有：光标指向el结束，无：则插入空行，并移动光标
 
 
-        var next = $elm.next()[0];
+        var next = _$elm.next()[0];
 
         if (next) {
-          newRangeEl = $elm;
-          newRangeOffset = $elm.isTextNode() ? $elm.text().length : 0;
+          newRangeEl = _$elm;
+          newRangeOffset = _$elm.isTextNode() ? _$elm.text().length : 0;
         } else {
           var $section = $("<section><br></section>");
           this.$content.append($section);
@@ -3315,41 +3314,41 @@
         // 插入元素为：非文本
         var $el = $(el);
 
-        var _$elm;
+        var _$elm2;
 
         for (var i = 0; i < $el.length; i++) {
-          _$elm = $($el[i]);
+          _$elm2 = $($el[i]);
 
-          var nodeName = _$elm.nodeName(); // SECTION
+          var nodeName = _$elm2.nodeName(); // SECTION
 
 
           if (nodeName !== 'section') {
-            if (_$elm.nodeType() === 1 && !/a|video|img|audio/.test(nodeName)) {
-              _$elm.changeNodeName('section');
+            if (_$elm2.nodeType() === 1 && !/a|video|img|audio/.test(nodeName)) {
+              _$elm2.changeNodeName('section');
             } else {
               var _$tmp = $("<section></section>");
 
-              _$elm = _$tmp.append(_$elm);
+              _$elm2 = _$tmp.append(_$elm2);
             }
           }
 
           if ($cursorNode.isEmpty()) {
             // siblings is empty
             if ($cursorNode.next()[0] && $cursorNode.next().isEmpty()) {
-              $cursorNode.replace(_$elm);
+              $cursorNode.replace(_$elm2);
             } else {
-              _$elm.insertBefore($cursorNode);
+              _$elm2.insertBefore($cursorNode);
             }
           } else {
-            _$elm.insertAfter($cursorNode);
+            _$elm2.insertAfter($cursorNode);
           } // 判断$el是否有下一个节点，有：光标指向el结束，无：则插入空行，并移动光标
 
 
-          var _next = _$elm.next()[0];
+          var _next = _$elm2.next()[0];
 
           if (_next) {
-            newRangeEl = _$elm;
-            newRangeOffset = _$elm.isTextNode() ? _$elm.text().length : 0;
+            newRangeEl = _$elm2;
+            newRangeOffset = _$elm2.isTextNode() ? _$elm2.text().length : 0;
           } else {
             var _$section = $("<section><br></section>");
 
@@ -3363,7 +3362,6 @@
       this._checkChildSection();
 
       this.$content.trigger('input');
-      console.log(newRangeEl, newRangeOffset);
       this.cursor.setRange(newRangeEl, newRangeOffset);
     },
 
@@ -3515,7 +3513,7 @@
       //   styles.minHeight = (util.int(data.minHeight) || winHeight) + 'px'
       // }
       var styles = {
-        minHeight: '200px'
+        minHeight: this.options.minHeight
       };
       this.$content.css(styles);
     },
@@ -3601,7 +3599,6 @@
         // 当前光标位置超过了屏幕的4分之1
         if (cursorHeightInCurrentNode > window.innerHeight / 4) {
           cursorHeight = cursorHeightInCurrentNode;
-          console.log('cursorHeight >>>>', cursorHeight);
         }
 
         scrollTop = $(window).scrollTop();

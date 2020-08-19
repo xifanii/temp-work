@@ -47,7 +47,8 @@ CursorClass.prototype = {
    * @param el
    * @param offset
    */
-  setRange (el, offset) {
+  setRange(el, offset) {
+    console.log('setRange ...', el, offset);
     if (el instanceof ZxQuery) {
       el = el[0]
     }
@@ -99,14 +100,14 @@ CursorClass.prototype = {
    * @param needElement Want to get element node, not ZxQuery object
    * @return {*}
    */
-  getCurrentNode (needElement) {
+  getCurrentNode(needElement) {
     // 获取选定对象
     // this.selection = window.getSelection()
     // 设置最后光标对象
     try {
       this.range = this.selection.getRangeAt(0)
     } catch (e) {
-      this.range = new Range()
+      // this.range = new Range()
     }
     this.currentNode = this.range.endContainer
     this.offset = this.range.startOffset
