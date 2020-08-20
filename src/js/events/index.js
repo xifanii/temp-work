@@ -152,9 +152,15 @@ export function handleEvents () {
       e.preventDefault()
     }
 
+    // extra handler
+    if (this.options.clickContentHandler) {
+      this.options.clickContentHandler();
+    }
+
     // textStylePanel is undefined, or is hide
     if (!this.textStylePanel || !this.textStylePanel.visible) return
     this.textStylePanel.resetActiveState()
+
   }
 
   this.$eventHandlers.contentClick = {

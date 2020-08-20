@@ -2569,6 +2569,11 @@
 
       if (e && e.target && e.target.nodeName === 'A') {
         e.preventDefault();
+      } // extra handler
+
+
+      if (this.options.clickContentHandler) {
+        this.options.clickContentHandler();
       } // textStylePanel is undefined, or is hide
 
 
@@ -3171,7 +3176,9 @@
      */
     mainColor: '',
     // border color
-    borderColor: ''
+    borderColor: '',
+    // handler
+    clickContentHandler: function clickContentHandler() {}
   };
 
   function ZxEditor(selector, _options) {

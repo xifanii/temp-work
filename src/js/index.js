@@ -85,7 +85,9 @@ const DEF_OPTIONS = {
    */
   mainColor: '',
   // border color
-  borderColor: ''
+  borderColor: '',
+  // handler
+  clickContentHandler: ()=>{},
 }
 
 function ZxEditor (selector, _options) {
