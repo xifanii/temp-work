@@ -48,7 +48,7 @@ CursorClass.prototype = {
    * @param offset
    */
   setRange(el, offset) {
-    console.log('setRange ...', el, offset);
+    // console.log('setRange ...', el, offset);
     if (el instanceof ZxQuery) {
       el = el[0]
     }

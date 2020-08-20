@@ -1413,8 +1413,7 @@
     setRange: function setRange(el, offset) {
       var _this = this;
 
-      console.log('setRange ...', el, offset);
-
+      // console.log('setRange ...', el, offset);
       if (el instanceof ZxQuery) {
         el = el[0];
       }
@@ -2493,9 +2492,9 @@
       this.emit('input', e, this); // check empty in content
 
       this._checkEmpty(); // check cursor node position
+      // this.checkPosition('input')
+      // emit content on change
 
-
-      this.checkPosition(); // emit content on change
 
       this.emit('change', e, this);
     }
@@ -2565,7 +2564,7 @@
 
       this.$cursorNode = this.cursor.getCurrentNode(); // check position
 
-      this.checkPosition(); // 阻止触发a标签默认事件
+      this.checkPosition('click'); // 阻止触发a标签默认事件
 
       if (e && e.target && e.target.nodeName === 'A') {
         e.preventDefault();
@@ -2619,7 +2618,7 @@
       } // check position
 
 
-      this.checkPosition();
+      this.checkPosition('keyup');
     }
 
     this.$eventHandlers.contentKeyup = {
@@ -3581,7 +3580,8 @@
     /**
      * check cursor position
      */
-    checkPosition: function checkPosition() {
+    checkPosition: function checkPosition(key) {
+      // console.log('checkPosition >>>', key);
       var $el = this.$cursorNode = this.cursor.getCurrentNode();
       if (!$el || !$el.offset()) return; // 当前光标位置
 

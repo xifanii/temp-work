@@ -471,7 +471,8 @@ ZxEditor.prototype = {
   /**
    * check cursor position
    */
-  checkPosition () {
+  checkPosition(key) {
+    // console.log('checkPosition >>>', key);
     const $el = this.$cursorNode = this.cursor.getCurrentNode()
     if (!$el || !$el.offset()) return;
 

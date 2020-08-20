@@ -74,7 +74,7 @@ export function handleEvents () {
     this._checkEmpty()
 
     // check cursor node position
-    this.checkPosition()
+    // this.checkPosition('input')
 
     // emit content on change
     this.emit('change', e, this)
@@ -145,7 +145,7 @@ export function handleEvents () {
     // save $cursorNode
     this.$cursorNode = this.cursor.getCurrentNode()
     // check position
-    this.checkPosition()
+    this.checkPosition('click')
 
     // 阻止触发a标签默认事件
     if (e && e.target && e.target.nodeName === 'A') {
@@ -168,7 +168,6 @@ export function handleEvents () {
     type: 'click',
     handler: contentClick.bind(this)
   }
-
 
   /**
    * ****************************************************
@@ -200,7 +199,7 @@ export function handleEvents () {
       contentClick.call(this)
     }
     // check position
-    this.checkPosition()
+    this.checkPosition('keyup')
   }
 
   this.$eventHandlers.contentKeyup = {
